@@ -1,0 +1,86 @@
+RULE BASED MATCHING:
+
+	Match on Doc objects, not just strings
+	Match on tokens and token attributes
+	Use the model's predictions
+	Example: "duck" (verb) vs. "duck" (noun)
+	
+Match patterns
+	Lists of dictionaries, one per token
+
+	Match exact token texts
+		[{"TEXT": "iPhone"}, {"TEXT": "X"}]
+		
+	Match lexical attributes
+		[{"LOWER": "iphone"}, {"LOWER": "x"}]
+	Match any token attributes
+		[{"LEMMA": "buy"}, {"POS": "NOUN"}]
+		
+		
+import spacy
+
+# Import the Matcher
+from spacy.matcher import Matcher
+
+# Load a model and create the nlp object
+nlp = spacy.load("en_core_web_sm")
+
+# Initialize the matcher with the shared vocab
+matcher = Matcher(nlp.vocab)
+
+# Add the pattern to the matcher
+pattern = [{"TEXT": "iPhone"}, {"TEXT": "X"}]
+matcher.add("IPHONE_PATTERN", None, pattern)
+
+# Process some text
+doc = nlp("Upcoming iPhone X release date leaked")
+
+# Call the matcher on the doc
+matches = matcher(doc)
+
+# Call the matcher on the doc
+doc = nlp("Upcoming iPhone X release date leaked")
+matches = matcher(doc)
+
+# Iterate over the matches
+for match_id, start, end in matches:
+    # Get the matched span
+    matched_span = doc[start:end]
+    print(matched_span.text)
+	
+#####################################################
+
+Matching lexical attributes
+pattern = [
+    {"IS_DIGIT": True},
+    {"LOWER": "fifa"},
+    {"LOWER": "world"},
+    {"LOWER": "cup"},
+    {"IS_PUNCT": True}
+]
+doc = nlp("2018 FIFA World Cup: France won!")
+
+####################################################
+Matching other token attributes
+pattern = [
+    {"LEMMA": "love", "POS": "VERB"},
+    {"POS": "NOUN"}
+]
+doc = nlp("I loved dogs but now I love cats more.")
+
+######################################################
+Using operators and quantifiers (1)
+pattern = [
+    {"LEMMA": "buy"},
+    {"POS": "DET", "OP": "?"},  # optional: match 0 or 1 times
+    {"POS": "NOUN"}
+]
+doc = nlp("I bought a smartphone. Now I'm buying apps.")
+
+Example			Description
+{"OP": "!"}		Negation: match 0 times
+{"OP": "?"}		Optional: match 0 or 1 times
+{"OP": "+"}		Match 1 or more times
+{"OP": "*"}		Match 0 or more times
+
+

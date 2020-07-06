@@ -1,0 +1,26 @@
+How training works
+	1. Initialize the model weights randomly with nlp.begin_training
+	2. Predict a few examples with the current weights by calling nlp.update
+	3. Compare prediction with true labels
+	4. Calculate how to change weights to improve predictions
+	5. Update weights slightly
+	6. Go back to 2.
+	
+	
+Example: Training the entity recognizer
+	The entity recognizer tags words and phrases in context
+	Each token can only be part of one entity (Entities can't overlap, so each token can only be part of one entity.)
+		Examples need to come with context
+			("iPhone X is coming", {"entities": [(0, 8, "GADGET")]})
+		Texts with no entities are also important
+			("I need a new phone! Any tips?", {"entities": []})
+	Goal: teach the model to generalize
+	
+The training data
+Examples of what we want the model to predict in context
+	Update an existing model: a few hundred to a few thousand examples
+	Train a new category: a few thousand to a million examples
+		spaCy's English models: 2 million words
+	Usually created manually by human annotators
+	Can be semi-automated – for example, using spaCy's Matcher!
+	

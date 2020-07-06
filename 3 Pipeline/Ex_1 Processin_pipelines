@@ -1,0 +1,78 @@
+#################################################################################
+Load the en_core_web_sm model and create the nlp object.
+Print the names of the pipeline components using nlp.pipe_names.
+Print the full pipeline of (name, component) tuples using nlp.pipeline.
+#################################################################################
+import spacy
+​
+# Load the en_core_web_sm model
+nlp = spacy.load("en_core_web_sm")
+​
+# Print the names of the pipeline components
+print(nlp.pipe_names)
+​
+# Print the full pipeline of (name, component) tuples
+print(npl.pipeline)
+
+#################################################################################
+SIMPLE COMPONENTS
+Complete the component function with the doc’s length.
+Add the length_component to the existing pipeline as the first component.
+Try out the new pipeline and process any text with the nlp object – for example “This is a sentence.”.
+
+===================================================================================
+import spacy
+
+# Define the custom component
+def length_component(doc):
+    # Get the doc's length
+    doc_length = len(doc)
+    print(f"This document is {doc_length} tokens long.")
+    # Return the doc
+    return doc
+
+
+# Load the small English model
+nlp = spacy.load("en_core_web_sm")
+
+# Add the component first in the pipeline and print the pipe names
+nlp.add_pipe(length_component,first=True)
+print(nlp.pipe_names)
+
+# Process a text
+doc = nlp("This is my text")
+#################################################################################
+COMPLEX COMPONENTS
+Define the custom component and apply the matcher to the doc.
+Create a Span for each match, assign the label ID for "ANIMAL" and overwrite the doc.ents with the new spans.
+Add the new component to the pipeline after the "ner" component.
+Process the text and print the entity text and entity label for the entities in doc.ents.
+
+============================================================================================
+import spacy
+from spacy.matcher import PhraseMatcher
+from spacy.tokens import Span
+
+nlp = spacy.load("en_core_web_sm")
+animals = ["Golden Retriever", "cat", "turtle", "Rattus norvegicus"]
+animal_patterns = list(nlp.pipe(animals))
+print("animal_patterns:", animal_patterns)
+matcher = PhraseMatcher(nlp.vocab)
+matcher.add("ANIMAL", None, *animal_patterns)
+
+# Define the custom component
+def animal_component(doc):
+    # Apply the matcher to the doc
+    matches = matcher(doc)
+    # Create a Span for each match and assign the label "ANIMAL"
+    spans = [Span(doc, start, end, label="ANIMAL") for match_id, start, end in matches]
+    # Overwrite the doc.ents with the matched spans
+    doc.ents = spans
+    return doc
+
+
+# Add the component to the pipeline after the "ner" component
+nlp.add_pipe(animal_component, after="ner"
+
+#################################################################################
+

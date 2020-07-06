@@ -1,0 +1,73 @@
+Built-in pipeline components
+Name			Description					Creates
+tagger		Part-of-speech tagger		Token.tag, Token.pos
+parser		Dependency parser			Token.dep, Token.head, Doc.sents, Doc.noun_chunks
+ner			Named entity recognizer		Doc.ents, Token.ent_iob, Token.ent_type
+textcat		Text classifier				Doc.cats
+
+
+
+Pipeline defined in model's meta.json in order
+
+
+Pipeline attributes
+	nlp.pipe_names: list of pipeline component names
+	print(nlp.pipe_names)
+	nlp.pipeline: list of (name, component) tuples
+	
+#####################################################################################3
+
+Custom pipeline components
+
+
+Anatomy of a component (1)
+	Function that takes a doc, modifies it and returns it
+	Can be added using the nlp.add_pipe method
+	
+	def custom_component(doc):
+		# Do something to the doc here
+		return doc
+
+	nlp.add_pipe(custom_component)
+	======================================================================================
+	Argument		Description					Example
+	last		If True, add last			nlp.add_pipe(component, last=True)
+	first		If True, add first			nlp.add_pipe(component, first=True)
+	before		Add before component		nlp.add_pipe(component, before="ner")
+	after		Add after component			nlp.add_pipe(component, after="tagger")
+	======================================================================================
+	
+	Example: a simple component (1)
+	# Create the nlp object
+	nlp = spacy.load("en_core_web_sm")
+
+	# Define a custom component
+	def custom_component(doc):
+		# Print the doc's length
+		print("Doc length:", len(doc))
+		# Return the doc object
+		return doc
+
+	# Add the component first in the pipeline
+	nlp.add_pipe(custom_component, first=True)
+
+	# Print the pipeline component names
+	print("Pipeline:", nlp.pipe_names)
+	+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	# Create the nlp object
+	nlp = spacy.load("en_core_web_sm")
+
+	# Define a custom component
+	def custom_component(doc):
+
+		# Print the doc's length
+		print("Doc length:", len(doc))
+
+		# Return the doc object
+		return doc
+
+	# Add the component first in the pipeline
+	nlp.add_pipe(custom_component, first=True)
+
+	# Process a text
+	doc = nlp("Hello world!")

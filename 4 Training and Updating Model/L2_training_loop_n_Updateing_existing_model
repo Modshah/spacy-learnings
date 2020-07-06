@@ -1,0 +1,119 @@
+Training LOOP:
+#######################################################################################################
+The steps of a training loop
+	1. Loop for a number of times.
+	2. Shuffle the training data.
+	3. Divide the data into batches.
+	4. Update the model for each batch.
+	5. Save the updated model.
+	
+Example loop
+	+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	TRAINING_DATA = [
+		("How to preorder the iPhone X", {"entities": [(20, 28, "GADGET")]})
+		# And many more examples...
+	]
+	# Loop for 10 iterations
+	for i in range(10):
+		# Shuffle the training data
+		random.shuffle(TRAINING_DATA)
+		# Create batches and iterate over them
+		for batch in spacy.util.minibatch(TRAINING_DATA):
+			# Split the batch in texts and annotations
+			texts = [text for text, annotation in batch]
+			annotations = [annotation for text, annotation in batch]
+			# Update the model
+			nlp.update(texts, annotations)
+
+	# Save the model
+	nlp.to_disk(path_to_model)
+	+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+#######################################################################################################
+Updating an existing model
+
+Improve the predictions on new data
+Especially useful to improve existing categories, like "PERSON"
+Also possible to add new categories
+Be careful and make sure the model doesn't "forget" the old ones
+
+Setting up a new pipeline from scratch
+	Using the add_label method, we can add new string labels to the model.
+	nlp.begin_training to initialize the model with random weights.
+	To get better accuracy, we want to loop over the examples more than once and randomly shuffle the data on each iteration
+	
+	+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	# Start with blank English model
+	nlp = spacy.blank("en")
+	# Create blank entity recognizer and add it to the pipeline
+	ner = nlp.create_pipe("ner")
+	nlp.add_pipe(ner)
+	# Add a new label
+	ner.add_label("GADGET")
+
+	# Start the training
+	nlp.begin_training()
+	# Train for 10 iterations
+	for itn in range(10):
+		random.shuffle(examples)
+		# Divide examples into batches
+		for batch in spacy.util.minibatch(examples, size=2):
+			texts = [text for text, annotation in batch]
+			annotations = [annotation for text, annotation in batch]
+			# Update the model
+			nlp.update(texts, annotations)
+	+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+#######################################################################################################
+Best practices for training spaCy models
+
+Problem 1: Models can "forget" things
+	Existing model can overfit on new data
+	e.g.: if you only update it with "WEBSITE", it can "unlearn" what a "PERSON" is
+	Also known as "catastrophic forgetting" problem
+
+	Solution 1: Mix in previously correct predictions
+		For example, if you're training "WEBSITE", also include examples of "PERSON"
+		Run existing spaCy model over data and extract all other relevant entities
+			BAD:
+
+				TRAINING_DATA = [
+					("Reddit is a website", {"entities": [(0, 6, "WEBSITE")]})
+				]
+			GOOD:
+				TRAINING_DATA = [
+					("Reddit is a website", {"entities": [(0, 6, "WEBSITE")]}),
+					("Obama is a person", {"entities": [(0, 5, "PERSON")]})
+				]
+		
+Problem 2: Models can't learn everything
+	spaCy's models make predictions based on local context
+	Model can struggle to learn if decision is difficult to make based on context
+	Label scheme needs to be consistent and not too specific
+		For example: "CLOTHING" is better than "ADULT_CLOTHING" and "CHILDRENS_CLOTHING"
+		(it may be very difficult to teach a model to predict whether something is adult clothing or children's clothing based on the context. However, just predicting the label "clothing" may work better.)
+	Solution 2: Plan your label scheme carefully
+		Pick categories that are reflected in local context
+		More generic is better than too specific
+		Use rules to go from generic labels to specific categories
+			BAD:
+				LABELS = ["ADULT_SHOES", "CHILDRENS_SHOES", "BANDS_I_LIKE"]
+			GOOD:
+				LABELS = ["CLOTHING", "BAND"]
+				
+				
+#########################################################################################################################
+
+Training and updating other pipeline components
+	Part-of-speech tagger
+	Dependency parser
+	Text classifier
+	https://spacy.io/usage/training
+	
+customizing tokenization
+https://spacy.io/usage/linguistic-features#tokenization
+	
+	
+Adding or improving support for other languages
+	55+ languages currently
+	https://spacy.io/usage/adding-languages

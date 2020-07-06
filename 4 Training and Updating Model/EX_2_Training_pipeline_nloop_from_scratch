@@ -1,0 +1,60 @@
+#######################################################################################################
+settinG up pipeline
+Create a blank "en" model, for example using the spacy.blank method.
+Create a new entity recognizer using nlp.create_pipe and add it to the pipeline.
+Add the new label "GADGET" to the entity recognizer using the add_label method on the pipeline component.
+#######################################################################################################
+import spacy
+
+# Create a blank "en" model
+nlp = spacy.blank("en")
+
+# Create a new entity recognizer and add it to the pipeline
+ner = nlp.create_pipe("ner")
+nlp.add_pipe(ner)
+
+# Add the label "GADGET" to the entity recognizer
+ner.add_label("GADGET")
+
+#######################################################################################################
+BUILDING A TRAINING LOOP
+Call nlp.begin_training, create a training loop for 10 iterations and shuffle the training data.
+Create batches of training data using spacy.util.minibatch and iterate over the batches.
+Convert the (text, annotations) tuples in the batch to lists of texts and annotations.
+For each batch, use nlp.update to update the model with the texts and annotations.
+#######################################################################################################
+import spacy
+import random
+import json
+
+with open("exercises/en/gadgets.json") as f:
+    TRAINING_DATA = json.loads(f.read())
+
+nlp = spacy.blank("en")
+ner = nlp.create_pipe("ner")
+nlp.add_pipe(ner)
+ner.add_label("GADGET")
+
+# Start the training
+nlp.begin_training()
+
+# Loop for 10 iterations
+for itn in range(10):
+    # Shuffle the training data
+    random.shuffle(TRAINING_DATA)
+    losses = {}
+
+    # Batch the examples and iterate over them
+    for batch in spacy.util.minibatch(TRAINING_DATA, size=2):
+        texts = [text for text, entities in batch]
+        annotations = [entities for text, entities in batch]
+
+        # Update the model
+        nlp.update(texts, annotations, losses=losses)
+    print(losses)
+
+#######################################################################################################
+TRAINING MULTIPLE MODELS
+Part 1
+Complete the entity offsets for the "WEBSITE" entities in the data. Feel free to use len() if you don’t want to count the characters.
+#######################################################################################################
